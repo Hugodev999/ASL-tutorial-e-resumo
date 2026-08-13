@@ -5,13 +5,13 @@ A ASL (Amazon States Language) é exatamente como essa receita de bolo, mas escr
 1. O que é a ASL em palavras simples?
 Quando uma empresa cria um sistema (como um aplicativo de entregas), várias "tarefinhas" precisam acontecer em ordem:
 
-Confirmar o pagamento.
+-Confirmar o pagamento.
 
-Avisar o restaurante.
+-Avisar o restaurante.
 
-Chamar o entregador.
+-Chamar o entregador.
 
-Enviar uma notificação para o seu celular.
+-Enviar uma notificação para o seu celular.
 
 A ASL é a linguagem usada para descrever o passo a passo e o caminho que o sistema deve seguir do começo ao fim.
 
