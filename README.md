@@ -1,129 +1,130 @@
-# ASL-tutorial-e-resumo
-Criar e executar um fluxo de trabalho com a Amazon States Language (ASL) no AWS Step Functions é um processo direto. Vamos construir um tutorial prático e hands-on, no qual criaremos um fluxo para validar e processar um pedido de compra.
+Imagine que você tem uma receita de bolo bem detalhada. Nela está escrito: *"Misture os ovos. **SE** o forno já estiver quente, coloque a massa para assar; **SENÃO**, espere 5 minutos. Quando terminar de assar, avise que o bolo está pronto."*
 
-Neste tutorial, você aprenderá a criar a máquina de estado no console da AWS, aplicar a lógica em ASL, simular entradas e analisar a execução visualmente.
+A **ASL** (**A**mazon **S**tates **L**anguage) é exatamente como essa receita de bolo, mas escrita para computadores dentro do serviço de nuvem da Amazon (a AWS).
 
-Pré-requisitos
-Uma conta ativa na AWS.
+---
 
-Acesso ao serviço AWS Step Functions.
+## 1. O que é a ASL em palavras simples?
 
-Passo 1: Acessar o AWS Step Functions
-Faça login no Console de Gerenciamento da AWS.
+Quando uma empresa cria um sistema (como um aplicativo de entregas), várias "tarefinhas" precisam acontecer em ordem:
 
-Na barra de busca superior, digite Step Functions e selecione o serviço.
+1. Confirmar o pagamento.
+2. Avisar o restaurante.
+3. Chamar o entregador.
+4. Enviar uma notificação para o seu celular.
 
-No painel principal, clique no botão Create state machine (Criar máquina de estado).
+A **ASL** é a linguagem usada para **descrever o passo a passo e o caminho** que o sistema deve seguir do começo ao fim.
 
-Passo 2: Escolher a Opção de Construção
-A AWS oferece um construtor visual (Workflow Studio). Para aprender a sintaxe do ASL, selecione a opção Write in code (Escrever em código) ou mude para a aba de código no editor.
+Em vez de escrever linhas e linhas de códigos complexos para ligar um sistema no outro, você escreve um texto simples em formato de "lista de tarefas" (usando um formato chamado JSON) dizendo à AWS: *"Primeiro faça a tarefa A. Se der certo, faça a B. Se der errado, tente de novo."*
 
-Em Type (Tipo), mantenha selecionado Standard (ideal para aprender e acompanhar o histórico de transições).
+A AWS pega esse seu texto em ASL e cria um **mapa visual interativo** (um fluxograma), mostrando exatamente em qual passo as coisas estão acontecendo em tempo real.
 
-Passo 3: Escrever o Código ASL
-Substitua qualquer código existente no editor de código do console pelo documento JSON abaixo.
+---
 
-Este fluxo em ASL faz o seguinte:
+## 2. Passo a Passo Prático: Usando a ASL pela primeira vez
 
-Recebe um pedido com valor (valorTotal).
+Vamos criar um pequeno fluxo de decisões onde o computador vai ler uma nota de um aluno e dizer se ele foi **Aprovado** ou se precisa de **Recuperação**.
 
-Usa um estado Choice para verificar se o valor é maior que 100.
+### Passo 1: Acesse a AWS
 
-Se for maior que 100, direciona para aprovação manual/especial (AprovarPedidoGrande).
+1. Entre no **Console da AWS** (aws.amazon.com).
+2. Na barra de pesquisa no topo, digite **Step Functions** e clique nele.
 
-Se for menor ou igual a 100, aprova automaticamente (AprovarPedidoPadrao).
+---
 
-Finaliza com um estado de sucesso (PedidoConcluido).
+### Passo 2: Crie um novo fluxo de trabalho
 
-JSON
+1. Clique no botão laranja **Create state machine** (Criar máquina de estado).
+2. Escolha o modo de edição em código (**Write in code** ou mude para a aba de código).
+3. Deixe o tipo marcado como **Standard**.
+
+---
+
+### Passo 3: Cole a nossa "receita" em ASL
+
+Apague o que estiver no editor e cole o código abaixo. Leia os comentários para entender o que cada trecho faz:
+
+```json
 {
-  "Comment": "Tutorial de introdução ao ASL - Fluxo de Validação de Pedidos",
-  "StartAt": "VerificarValorDoPedido",
+  "Comment": "Fluxo simples em ASL para verificar se o aluno passou de ano",
+  "StartAt": "VerificarNota",
   "States": {
-    "VerificarValorDoPedido": {
+
+    "VerificarNota": {
       "Type": "Choice",
       "Choices": [
         {
-          "Variable": "$.valorTotal",
-          "NumericGreaterThan": 100,
-          "Next": "AprovarPedidoGrande"
+          "Variable": "$.nota",
+          "NumericGreaterThanEquals": 7,
+          "Next": "AlunoAprovado"
         }
       ],
-      "Default": "AprovarPedidoPadrao"
+      "Default": "AlunoEmRecuperacao"
     },
-    "AprovarPedidoGrande": {
+
+    "AlunoAprovado": {
       "Type": "Pass",
-      "Result": {
-        "status": "APROVADO",
-        "tipoProcessamento": "RevisaoEspecial"
-      },
-      "ResultPath": "$.resultadoAprovacao",
-      "Next": "PedidoConcluido"
+      "Result": "Parabéns! Você foi aprovado.",
+      "ResultPath": "$.mensagem",
+      "Next": "FimDoProcesso"
     },
-    "AprovarPedidoPadrao": {
+
+    "AlunoEmRecuperacao": {
       "Type": "Pass",
-      "Result": {
-        "status": "APROVADO",
-        "tipoProcessamento": "Automatico"
-      },
-      "ResultPath": "$.resultadoAprovacao",
-      "Next": "PedidoConcluido"
+      "Result": "Atenção! Você está de recuperação.",
+      "ResultPath": "$.mensagem",
+      "Next": "FimDoProcesso"
     },
-    "PedidoConcluido": {
+
+    "FimDoProcesso": {
       "Type": "Succeed"
     }
+
   }
 }
-Nota: Usamos o tipo "Pass" neste tutorial porque ele simula a execução de uma tarefa sem precisar criar uma função Lambda real ou infraestrutura adicional.
 
-Passo 4: Visualizar o Diagrama
-Observe o painel de Graph view (Visualização em gráfico) ao lado do editor. O console da AWS renderiza o código ASL em um diagrama de fluxo em tempo real. Você deverá ver as ramificações de decisão baseadas nas regras que definiu.
+```
 
-Passo 5: Salvar e Configurar a Máquina de Estado
-Clique em Next (Avançar) no canto superior direito.
+> **O que esse texto está dizendo?**
+> * **`StartAt`**: "Comece na etapa `VerificarNota`."
+> * **`Choice`**: "Analise a variável `nota`. Se for maior ou igual a 7, vá para `AlunoAprovado`. Se for menor (o padrão/`Default`), vá para `AlunoEmRecuperacao`."
+> * **`Pass`**: Apenas cria uma mensagem de resposta sem precisar executar um programa complexo.
+> * **`Succeed`**: "O processo terminou com sucesso!"
+> 
+> 
 
-Em State machine name (Nome da máquina de estado), digite: ValidadorDePedidosASL.
+---
 
-Em Permissions (Permissões), selecione Create new role (Criar nova função), e a AWS gerará as permissões necessárias no IAM automaticamente.
+### Passo 4: Veja o mapa visual ganhar vida
 
-Role até o final da página e clique em Create state machine.
+No lado direito do editor, observe a caixa **Graph view** (Visualização em gráfico). A AWS vai transformar o texto que você colou em um gráfico bonito com setinhas mostrando os caminhos possíveis.
 
-Passo 6: Executar e Testar o Fluxo
-Agora vamos simular dois cenários diferentes para ver a tomada de decisão da ASL em ação.
+---
 
-Teste 1: Pedido de alto valor (> 100)
-Na página da sua State Machine recém-criada, clique em Start execution (Iniciar execução).
+### Passo 5: Salve a sua máquina
 
-Na caixa Input (Entrada), cole o seguinte JSON:
+1. Clique no botão **Next** (Avançar) no topo da tela.
+2. Em **State machine name**, dê um nome, por exemplo: `VerificadorDeNotas`.
+3. Role até o final da página e clique em **Create state machine**.
 
-JSON
+---
+
+### Passo 6: Faça o teste!
+
+Agora vamos simular dados entrando na nossa receita para ver o computador tomando a decisão sozinho.
+
+1. Clique no botão **Start execution** (Iniciar execução).
+2. Na caixa de texto chamada **Input** (Entrada), cole a nota de um aluno:
+```json
 {
-  "pedidoId": "PED-001",
-  "valorTotal": 250.00
+  "aluno": "Carlos",
+  "nota": 8.5
 }
-Clique em Start execution.
 
-Resultado: Observe o diagrama verde. O fluxo seguiu o caminho VerificarValorDoPedido → AprovarPedidoGrande → PedidoConcluido.
+```
 
-Clique no estado AprovarPedidoGrande e confira a aba Output no painel direito. Você verá a propriedade resultadoAprovacao anexada ao JSON original.
 
-Teste 2: Pedido de valor padrão (≤ 100)
-Clique novamente no botão Start execution (no topo da página).
+3. Clique em **Start execution**.
+4. **Veja a mágica:** No mapa visual, o caminho percorrido ficará **verde**. Você verá que o sistema leu a nota `8.5` e seguiu sozinho para o caminho de `AlunoAprovado`.
 
-Na caixa Input, passe um valor menor:
-
-JSON
-{
-  "pedidoId": "PED-002",
-  "valorTotal": 45.50
-}
-Clique em Start execution.
-
-Resultado: O fluxo agora pegou a rota Default, passando por AprovarPedidoPadrao.
-
-Próximos Passos
-Para evoluir suas habilidades em ASL:
-
-Substituir o Pass por Task: Substitua o estado de aprovação por uma invocação real de AWS Lambda ou gravação direta no Amazon DynamoDB.
-
-Adicionar Resiliência: Inclua blocos de Retry e Catch para tratar possíveis falhas ou timeouts das chamadas.
+Se você clicar em **Start execution** de novo e mandar uma nota menor que 7 (como `"nota": 5.0`), verá no gráfico que o sistema mudará de rota automaticamente e seguirá para `AlunoEmRecuperacao`.
